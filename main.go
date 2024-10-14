@@ -161,12 +161,11 @@ func initializeRedisClient(redisURL string) *redis.Client {
 		log.Fatalf("Failed to parse Redis URL: %v", err)
 	}
 
-	// Set options for connection pooling
-	opts.PoolSize = 10                  // Set max number of connections (adjust based on your needs)
-	opts.MinIdleConns = 3               // Minimum number of idle connections
-	opts.DialTimeout = 5 * time.Second  // Timeout for dialing new connections
-	opts.ReadTimeout = 5 * time.Second  // Timeout for read operations
-	opts.WriteTimeout = 5 * time.Second // Timeout for write operations
+	opts.PoolSize = 50
+	opts.MinIdleConns = 10
+	opts.DialTimeout = 10 * time.Second
+	opts.ReadTimeout = 10 * time.Second
+	opts.WriteTimeout = 10 * time.Second
 
 	rdb := redis.NewClient(opts)
 	log.Println("Redis client initialized successfully")
