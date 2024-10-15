@@ -21,7 +21,7 @@ func main() {
 
 	redisURL := os.Getenv("REDIS_URL")
 	sourceQueue := os.Getenv("REDIS_LIST")
-	processingQueue := os.Getenv("PROCESSING_LIST")
+	processingQueue := generateProcessingQueue() // Generate unique processing list for each consumer
 	lambdaName := os.Getenv("LAMBDA_NAME")
 
 	log.Printf("Connecting to Redis at %s", redisURL)
@@ -35,6 +35,7 @@ func main() {
 		batchSize = 10 // Default value
 	}
 	log.Printf("Batch size set to %d", batchSize)
+	log.Printf("This consumer is using processing list: %s", processingQueue)
 
 	// Get batch TTL from env var (in seconds) or default to 5 seconds
 	batchTTLStr := os.Getenv("BATCH_TTL")
@@ -83,6 +84,12 @@ func main() {
 	}
 }
 
+// Generate unique processing list for each consumer
+func generateProcessingQueue() string {
+	consumerID := os.Getenv("CONSUMER_ID")
+	return fmt.Sprintf("processing_queue_%s", consumerID)
+}
+
 // processExistingItems using LMPOP for batch processing
 func processExistingItems(rdb *redis.Client, lambdaClient *lambda.Lambda, processingQueue, lambdaName string, batchSize int) {
 	for {
@@ -126,7 +133,7 @@ func processExistingItems(rdb *redis.Client, lambdaClient *lambda.Lambda, proces
 	}
 }
 
-// processBatch invokes AWS Lambda with a batch of items
+// processBatch invokes AWS Lambda with a batch of items and removes from Redis
 func processBatch(lambdaClient *lambda.Lambda, functionName string, batch []string, rdb *redis.Client, processingQueue string) {
 	log.Printf("Invoking Lambda function %s with %d items", functionName, len(batch))
 
@@ -149,7 +156,16 @@ func processBatch(lambdaClient *lambda.Lambda, functionName string, batch []stri
 
 	log.Printf("Lambda invoked successfully. StatusCode: %d", *result.StatusCode)
 
-	// No need for LREM as items are already removed from Redis using LMPOP or BLMOVE
+	// Remove items from the processingQueue after successful Lambda call
+	for _, item := range batch {
+		_, err := rdb.LRem(ctx, processingQueue, 1, item).Result()
+		if err != nil {
+			log.Printf("Error removing item from processing queue: %v", err)
+		} else {
+			log.Printf("Successfully removed item: %s from processing queue", item)
+		}
+	}
+
 	log.Printf("Batch processed and removed from Redis")
 }
 
