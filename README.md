@@ -5,15 +5,16 @@ export PROCESSING_LIST="batch_processing"
 export REDIS_LIST="source_list"
 export LAMBDA_NAME="arn:aws:lambda:us-east-1:735486936198:function:gabs-ola-mundo"
 export AWS_REGION=us-east-1
+export BATCH_SIZE=200
+export BATCH_TTL=10
 export REDIS_URL="redis://localhost:6379"
-export BATCH_SIZE=100
-export BATCH_TTL=5
+export CONSUMER_ID=3
 
 go run main.go
 ```
 
 ```
-docker run --rm --name worker1   -e REDIS_URL=redis://default:V89HmBu9tOuuFCYlmCnEBPB3B6sGNxJN@redis-14095.internal.c34298.us-east-1-mz.ec2.cloud.rlrcp.com:14095   -e REDIS_LIST=source_list   -e PROCESSING_LIST=batch_processing   -e LAMBDA_NAME=arn:aws:lambda:us-east-1:735486936198:function:gabs-ola-mundo   -e BATCH_SIZE=100   -e BATCH_TTL=15   -e AWS_REGION=us-east-1   -e AWS_ACCESS_KEY_ID=haha   -e AWS_SECRET_ACCESS_KEY=hehe gacerioni/redis-list-to-aws-lambda:1.0.2
+docker run -d --rm --name worker1   -e REDIS_URL=redis://default:lQzTmKr39AzJTqLaPGy7ydVtN6QioHXD@redis-15972.internal.c34323.us-east-1-mz.ec2.cloud.rlrcp.com:15972   -e REDIS_LIST=source_list   -e PROCESSING_LIST=batch_processing -e CONSUMER_ID=1   -e LAMBDA_NAME=arn:aws:lambda:us-east-1:735486936198:function:gabs-ola-mundo   -e BATCH_SIZE=100   -e BATCH_TTL=15   -e AWS_REGION=us-east-1   -e AWS_ACCESS_KEY_ID=blabla   -e AWS_SECRET_ACCESS_KEY=blabla   gacerioni/redis-list-to-aws-lambda:1.0.3
 ```
 
 ```
