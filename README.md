@@ -1,6 +1,7 @@
 # QUICK USAGE FOR NOW
 
 ```
+# Horizontal Scaling - keep adding workers with diff CONSUMER_IDs
 export PROCESSING_LIST="batch_processing"
 export REDIS_LIST="source_list"
 export LAMBDA_NAME="arn:aws:lambda:us-east-1:735486936198:function:gabs-ola-mundo"
